@@ -1,107 +1,120 @@
-const preview = document.querySelector('#preview')
-const previewScale = document.querySelector('#preview-scale')
-const previewFlip = document.querySelector('#preview-flip')
-const brightnessSlider = document.querySelector('#brightness')
-const brightnessSliderValue = document.querySelector('#brightness-value')
-const rotateSlider = document.querySelector('#rotate')
-const rotateSliderValue = document.querySelector('#rotate-value')
+const preview = document.querySelector(`#preview`)
+const filtersBox = document.querySelector('#filters')
+const rotateSlider = document.querySelector(`#rotate`)
+const previewFlip = document.querySelector(`#preview-flip`)
+const previewScale = document.querySelector(`#preview-scale`)
+const brightnessSlider = document.querySelector(`#brightness`)
+const rotateSliderValue = document.querySelector(`#rotate-value`)
+const brightnessSliderValue = document.querySelector(`#brightness-value`)
+
+const filterValues = {
+	none: `unset`,
+	blur: `blur(2px)`,
+	sepia: `sepia(1)`,
+	invert: `invert(1)`,
+	saturate: `saturate(2)`,
+	blend: `url(#blendSvg)`,
+	opacity: `opacity(0.5)`,
+	contrast: `contrast(2)`,
+	grayscale: `grayscale(1)`,
+	picture: `url(#pictureSvg)`,
+	convolve: `url(#convolveSvg)`,
+	'hue-rotate': `hue-rotate(90deg)`
+}
+
+const initFilter = () => {
+	Object.keys(filterValues)
+		.map(createFilter)
+		.forEach(i => filtersBox.appendChild(i))
+}
+
+const createFilter = type => {
+	const wrapper = document.createElement('div')
+
+	const thumb = document.createElement('div')
+	thumb.addEventListener('click', handleFilter)
+	thumb.classList.add('thumb')
+
+	const image = document.createElement('img')
+	image.src = './assets/img/template.jpg'
+	image.alt = type
+	image.id = type
+
+	const span = document.createElement('span')
+	span.innerText = type
+
+	thumb.appendChild(image)
+	wrapper.appendChild(thumb)
+	wrapper.appendChild(span)
+
+	return wrapper
+}
 
 const handleRotate = () => {
-	const rotate = Number(rotateSlider.value)
+	const rotate = rotateSlider.valueAsNumber
 	rotateSliderValue.innerText = rotate
-  //Fix rotate bug 
-	preview.style.transform = `rotate(${rotate}deg)`
+
+	const rotateToRadian = rotate * (Math.PI / 180).toFixed(5)
+
+	const scale = Math.abs(Math.sin(rotateToRadian).toFixed(5)) + Math.abs(Math.cos(rotateToRadian).toFixed(5))
+	preview.style.transform = `rotate(${rotate}deg) scale(${scale})`
 }
 
 const handleBrightness = () => {
-	const brightness = brightnessSlider.value
+	const brightness = brightnessSlider.valueAsNumber
 	brightnessSliderValue.innerText = brightness
 
-	let style = window.getComputedStyle(preview)
-	let current = style.getPropertyValue('filter')
+	const prevFilters = preview.style.filter.replace(/brightness\([0-9\.]+\)/gm, '')
+	const newFilter = prevFilters + ` brightness(${brightness})`
 
-	let reg = new RegExp(`brightness[\\s ]*\\([^\\)]+\\)`)
-	const result = current.replace(reg, '')
-
-	if (result === 'none') {
-		preview.style.filter = `brightness(${brightness})`
-	} else {
-		preview.style.filter = `brightness(${brightness}) ${result}`
-	}
+	preview.style.filter = newFilter
 }
 
-const handleFilter = ({ target }) => {
-	const { id: filter } = target
+const handleFilter = e => {
+	const filter = e.target.id
 
-	const filterValue = findFilter(filter)
-
-	if (filterValue === 'none') {
-		reset()
-	} else {
-		preview.style.filter = filterValue
-	}
-}
-
-const reset = () => {
-	preview.style.transform = ''
-	preview.style.filter = ''
-	brightnessSlider.value = 1
-	brightnessSliderValue.innerText = 1
-	rotateSlider.value = 0
-	rotateSliderValue.innerText = 0
-}
-
-const findFilter = filter => {
-	// filter: "grayscale" | "sepia" | "invert" | "hue-rotate" | "contrast" | "saturate" | "blur"
-	switch (filter) {
-		case 'grayscale':
-			return 'grayscale(1)'
-		case 'sepia':
-			return 'sepia(1)'
-		case 'invert':
-			return 'invert(1)'
-		case 'hue-rotate':
-			return 'hue-rotate(90deg)'
-		case 'contrast':
-			return 'contrast(2)'
-		case 'saturate':
-			return 'saturate(2)'
-		case 'blur':
-			return 'blur(2px)'
-		default:
-			return 'none'
-	}
+	const prevBrightnessValue = preview.style.filter.split('brightness')[1]
+	preview.style.filter = `${filterValues[filter]} ${prevBrightnessValue ? `brightness${prevBrightnessValue}` : ''}`
 }
 
 const handleFlip = flip => {
-	let style = window.getComputedStyle(previewFlip)
-	let current = style.getPropertyValue('transform')
+	let prevScaleX = previewFlip.style.transform.match(/(?<=scaleX\()[1\-]{1,2}/)
+	prevScaleX = prevScaleX ? prevScaleX[0] : '1'
 
-	if (flip === 'horizontal') {
-		current !== 'matrix(-1, 0, 0, 1, 0, 0)'
-			? (previewFlip.style.transform = `scaleX(-1)`)
-			: (previewFlip.style.transform = `scaleX(1)`)
-	} else {
-		current !== 'matrix(1, 0, 0, -1, 0, 0)'
-			? (previewFlip.style.transform = `scaleY(-1)`)
-			: (previewFlip.style.transform = `scaleY(1)`)
-	}
+	let prevScaleY = previewFlip.style.transform.match(/(?<=scaleY\()[1\-]{1,2}/)
+	prevScaleY = prevScaleY ? prevScaleY[0] : '1'
+
+	const newVerticalFlip = `scaleX(${prevScaleX}) scaleY(${-prevScaleY})`
+	const newHorizontalFlip = `scaleX(${-prevScaleX}) scaleY(${prevScaleY})`
+
+	previewFlip.style.transform = flip === 'vertical' ? newVerticalFlip : newHorizontalFlip
 }
 
 const handleMouseLeave = () => {
-	previewScale.style.transform = 'none'
-	previewScale.style.transformOrigin = 'none'
+	previewScale.style.transform = 'scale(1)'
+}
+
+const handleMouseEnter = () => {
+	previewScale.style.transform = 'scale(2)'
 }
 
 const handleMouseMove = e => {
+	const imageWidth = previewScale.offsetWidth
+	const imageHeight = previewScale.offsetHeight
 	const imageOffsetTop = previewScale.offsetTop
 	const imageOffsetLeft = previewScale.offsetLeft
 	const pageX = e.pageX
 	const pageY = e.pageY
 
-	const x = pageX - imageOffsetLeft
-	const y = pageY - imageOffsetTop
+	const xPos = pageX - imageOffsetLeft
+	const yPos = pageY - imageOffsetTop
 
-	previewScale.style.transform = `scale(2)`
-	previewScale.style.transformOrigin = `${x}px ${y}px`
+	if (xPos >= 0 && yPos >= 0) {
+		const xPerc = (xPos / imageWidth).toFixed(5) * 100 + '%'
+		const yPerc = (yPos / imageHeight).toFixed(5) * 100 + '%'
+
+		previewScale.style.transformOrigin = `${xPerc} ${yPerc}`
+	}
 }
+
+document.addEventListener('DOMContentLoaded', initFilter)
