@@ -1,50 +1,66 @@
 #tools {
-  display: flex;
-  flex-direction: column;
-  width: min(600px, 100%);
-  gap: 8px;
+	display: flex;
+	flex-direction: column;
+	width: min(600px, 100%);
+	gap: 8px;
 }
 
 #filters {
-  /* display: flex; */
-  /* gap: 8px; */
-  /* overflow: auto; */
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 8px;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-gap: 8px;
 }
 
 #adjust {
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  align-items: center;
+	display: flex;
+	gap: 8px;
+	justify-content: space-between;
+	align-items: center;
 }
 
 #grayscale {
-  filter: grayscale(1);
+	filter: grayscale(1);
 }
 
 #sepia {
-  filter: sepia(1);
+	filter: sepia(1);
 }
 
 #invert {
-  filter: invert(1);
+	filter: invert(1);
 }
 
 #blur {
-  filter: blur(2px);
+	filter: blur(2px);
 }
 
 #saturate {
-  filter: saturate(2);
+	filter: saturate(2);
 }
 
 #contrast {
-  filter: contrast(2);
+	filter: contrast(2);
 }
 
 #hue-rotate {
-  filter: hue-rotate(90deg);
+	filter: hue-rotate(90deg);
+}
+
+#wavy {
+	filter: url(#wavySvg);
+}
+
+#blend {
+	filter: url(#blendSvg);
+}
+
+#convolve {
+	filter: url(#convolveSvg);
+}
+#discrete {
+	filter: url(#discreteSvg);
+}
+
+#picture {
+	filter: url(#pictureSvg);
 }
