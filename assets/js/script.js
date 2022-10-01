@@ -70,11 +70,21 @@ const handleBrightness = () => {
 	preview.style.filter = newFilter
 }
 
+const resetBrightness = () => {
+	brightnessSlider.value = 1
+	brightnessSliderValue.innerText = `1`
+}
+
 const handleFilter = e => {
 	const filter = e.target.id
 
-	const prevBrightnessValue = preview.style.filter.split('brightness')[1]
-	preview.style.filter = `${filterValues[filter]} ${prevBrightnessValue ? `brightness${prevBrightnessValue}` : ''}`
+	const prevBrightnessValue = preview.style.filter.match(/(?<=brightness)\([0-9\.]+\)/)
+	let newFilter = ''
+
+	if (filter === 'none') resetBrightness()
+	else newFilter = `${filterValues[filter]} ${prevBrightnessValue ? `brightness${prevBrightnessValue[0]}` : ''}`
+
+	preview.style.filter = newFilter
 }
 
 const handleFlip = flip => {
